@@ -8,25 +8,75 @@
 import SwiftUI
 
 struct ContentView: View {
-    let emojis: Array<String> = ["🐶", "🐼", "🐯", "🐸", "🐭", "🐹","🐻","🐯","🐧","🐦","🐥","🐗"]
-    @State var cardCount: Int = 4
+    let emojiDict = [
+        "Animals": ["🐶", "🐼", "🐯", "🐸", "🐭", "🐹","🐻","🐯","🐧","🐦","🐥","🐗"],
+        "Flags": ["🇧🇲","🇧🇹","🇧🇴","🇧🇦","🇧🇳","🇻🇬","🇧🇷"],
+        "Activities": ["⚽️","🏀","🏈","⚾️","🏉","🏐","🎾"]
+    ]
+    
+    let symbolDict = [
+        "Animals": "dog",
+        "Flags": "flag",
+        "Activities": "soccerball"
+    ]
+
+    @State var emojis: Array<String> = ["🐶", "🐼", "🐯", "🐸", "🐭", "🐹","🐻","🐯","🐧","🐦","🐥","🐗"]
+    @State var cardCount: Int = 12
     
     var body: some View {
         VStack() {
+            Text("Memorize !").font(.largeTitle)
             ScrollView{
                 cards
             }
             Spacer()
-            cardCountAdjusters
+            themeAdjusters
         }
         .padding()
     }
     
+    func theme(name: String) -> some View {
+        var themeEmojis = Array(emojiDict[name]!.shuffled().prefix(cardCount/2))
+        themeEmojis = themeEmojis + themeEmojis
+        return Button(
+            action: {
+                emojis = themeEmojis.shuffled()
+            },
+            label:{
+                VStack{
+                    Image(systemName: symbolDict[name]!).font(.title)
+                    Text(name)
+                }
+            }
+        )
+        
+    }
+    
+    var themeAdjusters: some View {
+        HStack{
+            Spacer()
+            // Animal theme
+            theme(name: "Animals")
+            Spacer()
+            theme(name: "Activities")
+            Spacer()
+            theme(name: "Flags")
+            Spacer()
+        }
+    }
+    
+    
     var cards: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 120))]) {
-            ForEach(0..<cardCount, id: \.self) { index in
-                CardView(content: emojis[index])
-                    .aspectRatio(2/3, contentMode: .fit)
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 110))]) {
+            if emojis.count > 0 {
+                ForEach(0..<cardCount, id: \.self) { index in
+                    if index < emojis.count {
+                        CardView(content: emojis[index])
+                            .aspectRatio(1, contentMode: .fit)
+                    }
+                }
+            } else {
+                Spacer()
             }
         }.foregroundColor(.orange)
     }
@@ -61,7 +111,7 @@ struct ContentView: View {
 
 struct CardView: View {
     let content: String
-    @State var isFaceUp = true
+    @State var isFaceUp = false
     
     var body: some View {
         ZStack() {
